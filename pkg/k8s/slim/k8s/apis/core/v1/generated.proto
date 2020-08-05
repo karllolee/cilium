@@ -584,6 +584,14 @@ message ServiceSpec {
   // +optional
   repeated string externalIPs = 5;
 
+  // If specified and supported by the platform, this will restrict traffic through the cloud-provider
+  // load-balancer will be restricted to the specified client IPs. This field will be ignored if the
+  // cloud-provider does not support the feature."
+  // More info:
+  // https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/
+  // +optional
+  repeated string loadBalancerSourceRanges = 9;
+
   // Supports "ClientIP" and "None". Used to maintain session affinity.
   // Enable client IP based session affinity.
   // Must be ClientIP or None.
