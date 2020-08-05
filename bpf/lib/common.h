@@ -531,6 +531,7 @@ enum {
 	SVC_FLAG_AFFINITY     = (1 << 4),  /* sessionAffinity=clientIP */
 	SVC_FLAG_LOADBALANCER = (1 << 5),  /* LoadBalancer service */
 	SVC_FLAG_ROUTABLE     = (1 << 6),  /* Not a surrogate/ClusterIP entry */
+	SVC_FLAG_CHECK_SRC    = (1 << 7),  /* Check LoadBalancer source range */
 };
 
 struct ipv6_ct_tuple {
