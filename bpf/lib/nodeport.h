@@ -1228,6 +1228,10 @@ static __always_inline int nodeport_lb4(struct __ctx_buff *ctx,
 
 	svc = lb4_lookup_service(&key, false);
 	if (svc) {
+		cilium_dbg(ctx, DBG_GENERIC, 666, svc->rev_nat_index);
+		if (!lb4_check_src_range(svc, ip4->saddr))
+			return DROP_INVALID; /* TODO(brb) */
+
 		ret = lb4_local(get_ct_map4(&tuple), ctx, l3_off, l4_off, &csum_off,
 				&key, &tuple, svc, &ct_state_new, ip4->saddr);
 		if (IS_ERR(ret))

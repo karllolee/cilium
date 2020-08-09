@@ -23,6 +23,7 @@ import (
 	"net"
 	"reflect"
 	"sort"
+	"strconv"
 
 	"github.com/cilium/cilium/pkg/bpf"
 	"github.com/cilium/cilium/pkg/byteorder"
@@ -263,6 +264,15 @@ func (h *HeaderfileWriter) WriteNodeConfig(w io.Writer, cfg *datapath.LocalNodeC
 		}
 		if option.Config.EnableHostPort {
 			cDefinesMap["ENABLE_HOSTPORT"] = "1"
+		}
+
+		if option.Config.EnableLoadBalancerSourceRangeCheck {
+			cDefinesMap["ENABLE_LB_SRC_RANGE_CHECK"] = "1"
+			if option.Config.EnableIPv4 {
+				cDefinesMap["LB4_SRC_RANGE_MAP"] = lbmap.SourceRange4MapName
+				cDefinesMap["LB4_SRC_RANGE_MAP_SIZE"] =
+					strconv.Itoa(int(lbmap.SourceRange4Map.MapInfo.MaxEntries))
+			}
 		}
 
 		cDefinesMap["NODEPORT_PORT_MIN"] = fmt.Sprintf("%d", option.Config.NodePortMin)

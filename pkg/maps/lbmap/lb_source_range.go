@@ -20,6 +20,7 @@ import (
 	"unsafe"
 
 	"github.com/cilium/cilium/pkg/bpf"
+	"github.com/cilium/cilium/pkg/byteorder"
 	"github.com/cilium/cilium/pkg/types"
 )
 
@@ -30,9 +31,10 @@ const (
 // +k8s:deepcopy-gen=true
 // +k8s:deepcopy-gen:interfaces=github.com/cilium/cilium/pkg/bpf.MapKey
 type SourceRangeKey4 struct {
-	PrefixLen uint32
-	Address   types.IPv4
-	RevNATID  uint16
+	PrefixLen uint32     `align:"lpm"`
+	RevNATID  uint16     `align:"rev_nat_id"`
+	Pad       uint16     `align:"pad"`
+	Address   types.IPv4 `align:"addr"`
 }
 
 func (k *SourceRangeKey4) GetKeyPtr() unsafe.Pointer { return unsafe.Pointer(k) }
@@ -79,7 +81,8 @@ var SourceRange4Map = bpf.NewMap(
 
 func srcKey4(cidr *net.IPNet, revNATID uint16) *SourceRangeKey4 {
 	ones, _ := cidr.Mask.Size()
-	key := &SourceRangeKey4{PrefixLen: uint32(ones), RevNATID: revNATID}
+	id := byteorder.HostToNetwork(revNATID).(uint16)
+	key := &SourceRangeKey4{PrefixLen: uint32(ones) + 16 + 16, RevNATID: id}
 	copy(key.Address[:], cidr.IP.To4())
 	return key
 }
