@@ -462,6 +462,12 @@ func (d *Daemon) initMaps() error {
 		}
 	}
 
+	if option.Config.EnableLoadBalancerSourceRangeCheck {
+		if _, err := lbmap.SourceRange4Map.OpenOrCreate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

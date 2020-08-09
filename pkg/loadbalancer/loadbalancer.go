@@ -141,7 +141,7 @@ func (s ServiceFlags) String() string {
 		str = append(str, "non-routable")
 	}
 	if s&serviceFlagSourceRange != 0 {
-		str = append(str, "check source range")
+		str = append(str, "check source-range")
 	}
 
 	return strings.Join(str, ", ")
@@ -201,6 +201,7 @@ func (b *Backend) String() string {
 	return b.L3n4Addr.String()
 }
 
+// TODO(brb) Merge with pkg/service:UpsertServiceParams
 // SVC is a structure for storing service details.
 type SVC struct {
 	Frontend                  L3n4AddrID       // SVC frontend addr and an allocated ID
@@ -212,6 +213,7 @@ type SVC struct {
 	HealthCheckNodePort       uint16 // Service health check node port
 	Name                      string // Service name
 	Namespace                 string // Service namespace
+	LoadBalancerSourceRanges  []*net.IPNet
 }
 
 func (s *SVC) GetModel() *models.Service {

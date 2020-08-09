@@ -730,6 +730,9 @@ func datapathSVCs(svc *k8s.Service, endpoints *k8s.Endpoints) (svcs []loadbalanc
 		svcs[i].HealthCheckNodePort = svc.HealthCheckNodePort
 		svcs[i].SessionAffinity = svc.SessionAffinity
 		svcs[i].SessionAffinityTimeoutSec = svc.SessionAffinityTimeoutSec
+		if svcs[i].Type == loadbalancer.SVCTypeLoadBalancer {
+			svcs[i].LoadBalancerSourceRanges = svc.LoadBalancerSourceRanges
+		}
 	}
 
 	return svcs
@@ -795,6 +798,7 @@ func (k *K8sWatcher) addK8sSVCs(svcID k8s.ServiceID, oldSvc, svc *k8s.Service, e
 			SessionAffinity:           dpSvc.SessionAffinity,
 			SessionAffinityTimeoutSec: dpSvc.SessionAffinityTimeoutSec,
 			HealthCheckNodePort:       dpSvc.HealthCheckNodePort,
+			LoadBalancerSourceRanges:  dpSvc.LoadBalancerSourceRanges,
 			Name:                      svcID.Name,
 			Namespace:                 svcID.Namespace,
 		}

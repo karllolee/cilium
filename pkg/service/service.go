@@ -41,12 +41,14 @@ var (
 
 // LBMap is the interface describing methods for manipulating service maps.
 type LBMap interface {
-	UpsertService(uint16, net.IP, uint16, []uint16, int, bool, lb.SVCType, bool, uint8, bool, uint32) error
+	UpsertService(uint16, net.IP, uint16, []uint16, int, bool, lb.SVCType, bool,
+		uint8, bool, uint32, bool) error
 	DeleteService(lb.L3n4AddrID, int) error
 	AddBackend(uint16, net.IP, uint16, bool) error
 	DeleteBackendByID(uint16, bool) error
 	AddAffinityMatch(uint16, uint16) error
 	DeleteAffinityMatch(uint16, uint16) error
+	UpdateSourceRanges(uint16, []*net.IPNet, []*net.IPNet, bool) error
 	DumpServiceMaps() ([]*lb.SVC, []error)
 	DumpBackendMaps() ([]*lb.Backend, error)
 	DumpAffinityMatches() (lbmap.BackendIDByServiceIDSet, error)
@@ -232,6 +234,7 @@ func (s *Service) UpsertService(params *UpsertServiceParams) (bool, lb.ID, error
 
 		logfields.SessionAffinity:        params.SessionAffinity,
 		logfields.SessionAffinityTimeout: params.SessionAffinityTimeoutSec,
+		"loadBalancerSourceRanges":       params.LoadBalancerSourceRanges,
 	})
 	scopedLog.Debug("Upserting service")
 
@@ -572,7 +575,10 @@ func (s *Service) upsertServiceIntoLBMaps(svc *svcInfo, onlyLocalBackends bool,
 
 	ipv6 := svc.frontend.IsIPv6()
 
-	var toDeleteAffinity, toAddAffinity []lb.BackendID
+	var (
+		toDeleteAffinity, toAddAffinity []lb.BackendID
+		checkLBSrcRange                 bool
+	)
 
 	// Update sessionAffinity
 	if option.Config.EnableSessionAffinity {
@@ -604,14 +610,17 @@ func (s *Service) upsertServiceIntoLBMaps(svc *svcInfo, onlyLocalBackends bool,
 	}
 
 	// Update LB source range check cidrs
-	//checkPrevLBSrcRanges := len(prevLoadBalancerSourceRanges) != 0
-	//checkLBSrcRanges := len(svc.loadBalancerSourceRanges)
-	//if option.Config.EnableLoadBalancerSourceRangeCheck {
-	//	if checkPrevLBSrcRanges || checkLBSrcRanges {
-	//		// TODO(brb) add new
-	//		// TODO(brb) delete old
-	//	}
-	//}
+	if option.Config.EnableLoadBalancerSourceRangeCheck {
+		checkLBSrcRange = len(svc.loadBalancerSourceRanges) != 0
+		if checkLBSrcRange || len(prevLoadBalancerSourceRanges) != 0 {
+			if err := s.lbmap.UpdateSourceRanges(uint16(svc.frontend.ID),
+				prevLoadBalancerSourceRanges, svc.loadBalancerSourceRanges,
+				ipv6); err != nil {
+
+				return err
+			}
+		}
+	}
 
 	// Add new backends into BPF maps
 	for _, b := range newBackends {
@@ -638,7 +647,8 @@ func (s *Service) upsertServiceIntoLBMaps(svc *svcInfo, onlyLocalBackends bool,
 		backendIDs, prevBackendCount,
 		ipv6, svc.svcType, onlyLocalBackends,
 		svc.frontend.L3n4Addr.Scope,
-		svc.sessionAffinity, svc.sessionAffinityTimeoutSec)
+		svc.sessionAffinity, svc.sessionAffinityTimeoutSec,
+		checkLBSrcRange)
 	if err != nil {
 		return err
 	}

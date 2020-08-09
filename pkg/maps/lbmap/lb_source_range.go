@@ -58,15 +58,13 @@ var SourceRange4Map = bpf.NewMap(
 	bpf.ConvertKeyValue,
 ).WithCache()
 
-type SourceRangeBPFMap struct{}
-
-func (*SourceRangeBPFMap) Update(cidr net.IPNet, revNATID uint16) error {
-	return SourceRange4Map.Update(key4(cidr, revNATID), &SourceRangeValue{})
-}
-
-func (*SourceRangeBPFMap) Delete(cidr net.IPNet, revNATID uint16) error {
-	return SourceRange4Map.Delete(key4(cidr, revNATID))
-}
+//func Update(cidr net.IPNet, revNATID uint16) error {
+//	return SourceRange4Map.Update(srcKey4(cidr, revNATID), &SourceRangeValue{})
+//}
+//
+//func  Delete(cidr net.IPNet, revNATID uint16) error {
+//	return SourceRange4Map.Delete(srcKey4(cidr, revNATID))
+//}
 
 //func (*IPMasqBPFMap) Dump() ([]net.IPNet, error) {
 //	cidrs := []net.IPNet{}
@@ -79,7 +77,7 @@ func (*SourceRangeBPFMap) Delete(cidr net.IPNet, revNATID uint16) error {
 //	return cidrs, nil
 //}
 
-func key4(cidr net.IPNet, revNATID uint16) *SourceRangeKey4 {
+func srcKey4(cidr *net.IPNet, revNATID uint16) *SourceRangeKey4 {
 	ones, _ := cidr.Mask.Size()
 	key := &SourceRangeKey4{PrefixLen: uint32(ones), RevNATID: revNATID}
 	copy(key.Address[:], cidr.IP.To4())
