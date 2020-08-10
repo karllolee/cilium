@@ -545,7 +545,7 @@ static __always_inline int nodeport_lb6(struct __ctx_buff *ctx,
 	svc = lb6_lookup_service(&key, false);
 	if (svc) {
 		if (!lb6_check_src_range(svc, (union v6addr *) &ip6->saddr))
-			return DROP_INVALID; /* TODO(brb) */
+			return DROP_NOT_IN_SRC_RANGE;
 
 		ret = lb6_local(get_ct_map6(&tuple), ctx, l3_off, l4_off,
 				&csum_off, &key, &tuple, svc, &ct_state_new);
@@ -1232,7 +1232,7 @@ static __always_inline int nodeport_lb4(struct __ctx_buff *ctx,
 	svc = lb4_lookup_service(&key, false);
 	if (svc) {
 		if (!lb4_check_src_range(svc, ip4->saddr))
-			return DROP_INVALID; /* TODO(brb) */
+			return DROP_NOT_IN_SRC_RANGE;
 
 		ret = lb4_local(get_ct_map4(&tuple), ctx, l3_off, l4_off, &csum_off,
 				&key, &tuple, svc, &ct_state_new, ip4->saddr);
