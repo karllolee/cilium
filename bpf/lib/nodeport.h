@@ -544,7 +544,7 @@ static __always_inline int nodeport_lb6(struct __ctx_buff *ctx,
 
 	svc = lb6_lookup_service(&key, false);
 	if (svc) {
-		if (!lb6_check_src_range(svc, &ip6->saddr))
+		if (!lb6_check_src_range(svc, (union v6addr *) &ip6->saddr))
 			return DROP_INVALID; /* TODO(brb) */
 
 		ret = lb6_local(get_ct_map6(&tuple), ctx, l3_off, l4_off,

@@ -488,7 +488,7 @@ bool lb6_check_src_range(const struct lb6_service *svc __maybe_unused,
 {
 #ifdef ENABLE_LB_SRC_RANGE_CHECK
 	struct lb6_src_range_key key = {
-		.lpm_key = { 128 + 16 + 16, {} },
+		.lpm_key = { SRC_RANGE_STATIC_PREFIX_V6, {} },
 		.rev_nat_id = svc->rev_nat_index,
 		.addr = *saddr,
 	};
@@ -978,7 +978,7 @@ bool lb4_check_src_range(const struct lb4_service *svc __maybe_unused,
 {
 #ifdef ENABLE_LB_SRC_RANGE_CHECK
 	struct lb4_src_range_key key = {
-		.lpm_key = { 32 + 16 + 16, {} },
+		.lpm_key = { SRC_RANGE_STATIC_PREFIX_V4, {} },
 		.rev_nat_id = svc->rev_nat_index,
 		.addr = saddr,
 	};

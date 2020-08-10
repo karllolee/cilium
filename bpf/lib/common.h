@@ -749,6 +749,11 @@ struct ct_state {
 	__u16 backend_id;	/* Backend ID in lb4_backends */
 };
 
+#define SRC_RANGE_STATIC_PREFIX_V4		\
+	(8 * (sizeof(struct lb4_src_range_key) - sizeof(struct bpf_lpm_trie_key)))
+#define SRC_RANGE_STATIC_PREFIX_V6		\
+	(8 * (sizeof(struct lb6_src_range_key) - sizeof(struct bpf_lpm_trie_key)))
+
 struct lb4_src_range_key {
 	struct bpf_lpm_trie_key lpm_key;
 	__u16 rev_nat_id;
