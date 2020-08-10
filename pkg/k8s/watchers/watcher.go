@@ -724,6 +724,11 @@ func datapathSVCs(svc *k8s.Service, endpoints *k8s.Endpoints) (svcs []loadbalanc
 		}
 	}
 
+	lbSrcRanges := make([]*net.IPNet, 0, len(svc.LoadBalancerSourceRanges))
+	for _, cidr := range svc.LoadBalancerSourceRanges {
+		lbSrcRanges = append(lbSrcRanges, cidr)
+	}
+
 	// apply common service properties
 	for i := range svcs {
 		svcs[i].TrafficPolicy = svc.TrafficPolicy
@@ -731,7 +736,7 @@ func datapathSVCs(svc *k8s.Service, endpoints *k8s.Endpoints) (svcs []loadbalanc
 		svcs[i].SessionAffinity = svc.SessionAffinity
 		svcs[i].SessionAffinityTimeoutSec = svc.SessionAffinityTimeoutSec
 		if svcs[i].Type == loadbalancer.SVCTypeLoadBalancer {
-			svcs[i].LoadBalancerSourceRanges = svc.LoadBalancerSourceRanges
+			svcs[i].LoadBalancerSourceRanges = lbSrcRanges
 		}
 	}
 

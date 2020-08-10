@@ -771,6 +771,7 @@ func (s *Service) restoreServicesLocked() error {
 }
 
 func (s *Service) deleteServiceLocked(svc *svcInfo) error {
+	ipv6 := svc.frontend.L3n4Addr.IsIPv6()
 	obsoleteBackendIDs := s.deleteBackendsFromCacheLocked(svc)
 
 	scopedLog := log.WithFields(logrus.Fields{
@@ -793,10 +794,17 @@ func (s *Service) deleteServiceLocked(svc *svcInfo) error {
 		s.deleteBackendsFromAffinityMatchMap(svc.frontend.ID, backendIDs)
 	}
 
+	if option.Config.EnableLoadBalancerSourceRangeCheck &&
+		svc.svcType == lb.SVCTypeLoadBalancer {
+		if err := s.lbmap.UpdateSourceRanges(uint16(svc.frontend.ID),
+			svc.loadBalancerSourceRanges, nil, ipv6); err != nil {
+			return err
+		}
+	}
+
 	delete(s.svcByHash, svc.hash)
 	delete(s.svcByID, svc.frontend.ID)
 
-	ipv6 := svc.frontend.L3n4Addr.IsIPv6()
 	for _, id := range obsoleteBackendIDs {
 		scopedLog.WithField(logfields.BackendID, id).
 			Debug("Deleting obsolete backend")

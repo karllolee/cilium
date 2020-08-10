@@ -247,6 +247,10 @@ func deleteRevNatLocked(key RevNatKey) error {
 func (*LBBPFMap) UpdateSourceRanges(revNATID uint16, prevSourceRanges []*net.IPNet,
 	sourceRanges []*net.IPNet, ipv6 bool) error {
 
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!")
+	fmt.Println("UpdateSourceRanges", prevSourceRanges, sourceRanges)
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!")
+
 	if ipv6 {
 		return fmt.Errorf("NYI")
 	}
