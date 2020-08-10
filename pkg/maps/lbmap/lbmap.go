@@ -228,6 +228,22 @@ func (*LBBPFMap) DumpAffinityMatches() (BackendIDByServiceIDSet, error) {
 	return matches, nil
 }
 
+func (*LBBPFMap) DumpSourceRanges() (SourceRangeSetByServiceID, error) {
+	ret := SourceRangeSetByServiceID{}
+	if err := SourceRange4Map.DumpWithCallback(
+		func(key bpf.MapKey, value bpf.MapValue) {
+			k := key.(*SourceRangeKey4)
+			if _, found := ret[k.RevNATID]; !found {
+				ret[k.RevNATID] = []*net.IPNet{}
+			}
+			ret[k.RevNATID] = append(ret[k.RevNATID], srcKey4ToIPNet(k))
+		}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func updateRevNatLocked(key RevNatKey, value RevNatValue) error {
 	if key.GetKey() == 0 {
 		return fmt.Errorf("invalid RevNat ID (0)")

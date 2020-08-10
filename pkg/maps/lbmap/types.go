@@ -164,6 +164,8 @@ type RevNatValue interface {
 // belongs to a given service
 type BackendIDByServiceIDSet map[uint16]map[uint16]struct{} // svc ID => backend ID
 
+type SourceRangeSetByServiceID map[uint16][]*net.IPNet // svc ID => src range CIDRs
+
 func svcFrontend(svcKey ServiceKey, svcValue ServiceValue) *loadbalancer.L3n4AddrID {
 	feL3n4Addr := loadbalancer.NewL3n4Addr(loadbalancer.NONE, svcKey.GetAddress(), svcKey.GetPort(), svcKey.GetScope())
 	feL3n4AddrID := &loadbalancer.L3n4AddrID{
