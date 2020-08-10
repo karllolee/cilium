@@ -463,8 +463,15 @@ func (d *Daemon) initMaps() error {
 	}
 
 	if option.Config.EnableLoadBalancerSourceRangeCheck {
-		if _, err := lbmap.SourceRange4Map.OpenOrCreate(); err != nil {
-			return err
+		if option.Config.EnableIPv4 {
+			if _, err := lbmap.SourceRange4Map.OpenOrCreate(); err != nil {
+				return err
+			}
+		}
+		if option.Config.EnableIPv6 {
+			if _, err := lbmap.SourceRange6Map.OpenOrCreate(); err != nil {
+				return err
+			}
 		}
 	}
 

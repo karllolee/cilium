@@ -228,17 +228,26 @@ func (*LBBPFMap) DumpAffinityMatches() (BackendIDByServiceIDSet, error) {
 	return matches, nil
 }
 
-func (*LBBPFMap) DumpSourceRanges() (SourceRangeSetByServiceID, error) {
+func (*LBBPFMap) DumpSourceRanges(ipv4, ipv6 bool) (SourceRangeSetByServiceID, error) {
 	ret := SourceRangeSetByServiceID{}
-	if err := SourceRange4Map.DumpWithCallback(
-		func(key bpf.MapKey, value bpf.MapValue) {
-			k := key.(*SourceRangeKey4)
-			if _, found := ret[k.RevNATID]; !found {
-				ret[k.RevNATID] = []*net.IPNet{}
-			}
-			ret[k.RevNATID] = append(ret[k.RevNATID], srcKey4ToIPNet(k))
-		}); err != nil {
-		return nil, err
+	parser := func(key bpf.MapKey, value bpf.MapValue) {
+		k := key.(SourceRangeKey)
+		revNATID := k.GetRevNATID()
+		if _, found := ret[revNATID]; !found {
+			ret[revNATID] = []*net.IPNet{}
+		}
+		ret[revNATID] = append(ret[revNATID], k.GetCIDR())
+	}
+
+	if ipv4 {
+		if err := SourceRange4Map.DumpWithCallback(parser); err != nil {
+			return nil, err
+		}
+	}
+	if ipv6 {
+		if err := SourceRange6Map.DumpWithCallback(parser); err != nil {
+			return nil, err
+		}
 	}
 
 	return ret, nil
@@ -259,16 +268,12 @@ func deleteRevNatLocked(key RevNatKey) error {
 	return key.Map().Delete(key.ToNetwork())
 }
 
-// UpdateSourceRanges TODO(brb)
 func (*LBBPFMap) UpdateSourceRanges(revNATID uint16, prevSourceRanges []*net.IPNet,
 	sourceRanges []*net.IPNet, ipv6 bool) error {
 
-	fmt.Println("!!!!!!!!!!!!!!!!!!!!!")
-	fmt.Println("UpdateSourceRanges", prevSourceRanges, sourceRanges)
-	fmt.Println("!!!!!!!!!!!!!!!!!!!!!")
-
+	m := SourceRange4Map
 	if ipv6 {
-		return fmt.Errorf("NYI")
+		m = SourceRange6Map
 	}
 
 	srcRangeMap := map[string]*net.IPNet{}
@@ -278,7 +283,7 @@ func (*LBBPFMap) UpdateSourceRanges(revNATID uint16, prevSourceRanges []*net.IPN
 
 	for _, prevCIDR := range prevSourceRanges {
 		if _, found := srcRangeMap[prevCIDR.String()]; !found {
-			if err := SourceRange4Map.Delete(srcKey4(prevCIDR, revNATID)); err != nil {
+			if err := m.Delete(srcRangeKey(prevCIDR, revNATID, ipv6)); err != nil {
 				return err
 			}
 		} else {
@@ -287,7 +292,7 @@ func (*LBBPFMap) UpdateSourceRanges(revNATID uint16, prevSourceRanges []*net.IPN
 	}
 
 	for _, cidr := range srcRangeMap {
-		if err := SourceRange4Map.Update(srcKey4(cidr, revNATID), &SourceRangeValue{}); err != nil {
+		if err := m.Update(srcRangeKey(cidr, revNATID, ipv6), &SourceRangeValue{}); err != nil {
 			return err
 		}
 	}

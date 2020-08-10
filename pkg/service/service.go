@@ -52,7 +52,7 @@ type LBMap interface {
 	DumpServiceMaps() ([]*lb.SVC, []error)
 	DumpBackendMaps() ([]*lb.Backend, error)
 	DumpAffinityMatches() (lbmap.BackendIDByServiceIDSet, error)
-	DumpSourceRanges() (lbmap.SourceRangeSetByServiceID, error)
+	DumpSourceRanges(bool, bool) (lbmap.SourceRangeSetByServiceID, error)
 }
 
 // healthServer is used to manage HealtCheckNodePort listeners
@@ -450,7 +450,8 @@ func (s *Service) deleteOrphanAffinityMatchesLocked() error {
 }
 
 func (s *Service) restoreAndDeleteOrphanSourceRanges() error {
-	srcRangesBySvcID, err := s.lbmap.DumpSourceRanges()
+	srcRangesBySvcID, err := s.lbmap.DumpSourceRanges(
+		option.Config.EnableIPv4, option.Config.EnableIPv6)
 	if err != nil {
 		return err
 	}

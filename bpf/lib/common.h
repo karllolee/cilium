@@ -756,6 +756,13 @@ struct lb4_src_range_key {
 	__u32 addr;
 };
 
+struct lb6_src_range_key {
+	struct bpf_lpm_trie_key lpm_key;
+	__u16 rev_nat_id;
+	__u16 pad;
+	union v6addr addr;
+};
+
 static __always_inline int redirect_peer(int ifindex __maybe_unused,
 					 __u32 flags __maybe_unused)
 {

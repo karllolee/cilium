@@ -48,6 +48,17 @@ struct bpf_elf_map __section_maps LB6_AFFINITY_MAP = {
 };
 #endif
 
+#ifdef ENABLE_LB_SRC_RANGE_CHECK
+struct bpf_elf_map __section_maps LB6_SRC_RANGE_MAP = {
+	.type		= BPF_MAP_TYPE_LPM_TRIE,
+	.size_key	= sizeof(struct lb6_src_range_key),
+	.size_value	= sizeof(__u8),
+	.pinning	= PIN_GLOBAL_NS,
+	.max_elem	= LB4_SRC_RANGE_MAP_SIZE,
+	.flags		= BPF_F_NO_PREALLOC,
+};
+#endif
+
 #endif /* ENABLE_IPV6 */
 
 #ifdef ENABLE_IPV4
