@@ -228,7 +228,7 @@ func (*LBBPFMap) DumpAffinityMatches() (BackendIDByServiceIDSet, error) {
 	return matches, nil
 }
 
-func (*LBBPFMap) DumpSourceRanges(ipv4, ipv6 bool) (SourceRangeSetByServiceID, error) {
+func (*LBBPFMap) DumpSourceRanges(ipv6 bool) (SourceRangeSetByServiceID, error) {
 	ret := SourceRangeSetByServiceID{}
 	parser := func(key bpf.MapKey, value bpf.MapValue) {
 		k := key.(SourceRangeKey)
@@ -239,13 +239,12 @@ func (*LBBPFMap) DumpSourceRanges(ipv4, ipv6 bool) (SourceRangeSetByServiceID, e
 		ret[revNATID] = append(ret[revNATID], k.GetCIDR())
 	}
 
-	if ipv4 {
-		if err := SourceRange4Map.DumpWithCallback(parser); err != nil {
-			return nil, err
-		}
-	}
 	if ipv6 {
 		if err := SourceRange6Map.DumpWithCallback(parser); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := SourceRange4Map.DumpWithCallback(parser); err != nil {
 			return nil, err
 		}
 	}

@@ -52,7 +52,7 @@ type LBMap interface {
 	DumpServiceMaps() ([]*lb.SVC, []error)
 	DumpBackendMaps() ([]*lb.Backend, error)
 	DumpAffinityMatches() (lbmap.BackendIDByServiceIDSet, error)
-	DumpSourceRanges(bool, bool) (lbmap.SourceRangeSetByServiceID, error)
+	DumpSourceRanges(bool) (lbmap.SourceRangeSetByServiceID, error)
 }
 
 // healthServer is used to manage HealtCheckNodePort listeners
@@ -450,24 +450,29 @@ func (s *Service) deleteOrphanAffinityMatchesLocked() error {
 }
 
 func (s *Service) restoreAndDeleteOrphanSourceRanges() error {
-	srcRangesBySvcID, err := s.lbmap.DumpSourceRanges(
-		option.Config.EnableIPv4, option.Config.EnableIPv6)
-	if err != nil {
-		return err
+	opts := []bool{}
+	if option.Config.EnableIPv4 {
+		opts = append(opts, false)
+	}
+	if option.Config.EnableIPv6 {
+		opts = append(opts, true)
 	}
 
-	// TODO(brb)
-	ipv6 := false
-
-	for svcID, srcRanges := range srcRangesBySvcID {
-		svc, found := s.svcByID[lb.ID(svcID)]
-		if !found {
-			// Delete ranges
-			if err := s.lbmap.UpdateSourceRanges(svcID, srcRanges, nil, ipv6); err != nil {
-				return err
+	for _, ipv6 := range opts {
+		srcRangesBySvcID, err := s.lbmap.DumpSourceRanges(ipv6)
+		if err != nil {
+			return err
+		}
+		for svcID, srcRanges := range srcRangesBySvcID {
+			svc, found := s.svcByID[lb.ID(svcID)]
+			if !found {
+				// Delete ranges
+				if err := s.lbmap.UpdateSourceRanges(svcID, srcRanges, nil, ipv6); err != nil {
+					return err
+				}
+			} else {
+				svc.loadBalancerSourceRanges = srcRanges
 			}
-		} else {
-			svc.loadBalancerSourceRanges = srcRanges
 		}
 	}
 
