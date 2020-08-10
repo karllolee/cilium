@@ -241,7 +241,7 @@ func (s *Service) UpsertService(params *UpsertServiceParams) (bool, lb.ID, error
 
 	if !option.Config.EnableLoadBalancerSourceRangeCheck &&
 		len(params.LoadBalancerSourceRanges) != 0 {
-		scopedLog.Warn("--%s is disabled, ignoring loadBalancerSourceRanges",
+		scopedLog.Warnf("--%s is disabled, ignoring loadBalancerSourceRanges",
 			option.EnableLoadBalancerSourceRangeCheck)
 	}
 

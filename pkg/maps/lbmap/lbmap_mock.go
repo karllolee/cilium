@@ -37,7 +37,7 @@ func NewLBMockMap() *LBMockMap {
 
 func (m *LBMockMap) UpsertService(id uint16, ip net.IP, port uint16,
 	backendIDs []uint16, prevCount int, ipv6 bool, svcType lb.SVCType, svcLocal bool,
-	svcScope uint8, sessionAffinity bool, sessionAffinityTimeoutSec uint32) error {
+	svcScope uint8, sessionAffinity bool, sessionAffinityTimeoutSec uint32, checkLBSrcRange bool) error {
 
 	backends := make([]lb.Backend, len(backendIDs))
 	for i, backendID := range backendIDs {
@@ -146,4 +146,13 @@ func (m *LBMockMap) DeleteAffinityMatch(revNATID uint16, backendID uint16) error
 
 func (m *LBMockMap) DumpAffinityMatches() (BackendIDByServiceIDSet, error) {
 	return m.AffinityMatch, nil
+}
+
+func (m *LBMockMap) DumpSourceRanges(ipv6 bool) (SourceRangeSetByServiceID, error) {
+	return nil, fmt.Errorf("NYI")
+}
+
+func (m *LBMockMap) UpdateSourceRanges(revNATID uint16, prevRanges []*net.IPNet,
+	ranges []*net.IPNet, ipv6 bool) error {
+	return fmt.Errorf("NYI")
 }
