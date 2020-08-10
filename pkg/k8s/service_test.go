@@ -112,7 +112,7 @@ func (s *K8sSuite) TestParseService(c *check.C) {
 		Labels:                   map[string]string{"foo": "bar"},
 		Ports:                    map[loadbalancer.FEPortName]*loadbalancer.L4Addr{},
 		NodePorts:                map[loadbalancer.FEPortName]map[string]*loadbalancer.L3n4AddrID{},
-		LoadBalancerSourceRanges: []*net.IPNet{},
+		LoadBalancerSourceRanges: map[string]*net.IPNet{},
 	})
 
 	k8sSvc = &slim_corev1.Service{
@@ -137,7 +137,7 @@ func (s *K8sSuite) TestParseService(c *check.C) {
 		Labels:                   map[string]string{"foo": "bar"},
 		Ports:                    map[loadbalancer.FEPortName]*loadbalancer.L4Addr{},
 		NodePorts:                map[loadbalancer.FEPortName]map[string]*loadbalancer.L3n4AddrID{},
-		LoadBalancerSourceRanges: []*net.IPNet{},
+		LoadBalancerSourceRanges: map[string]*net.IPNet{},
 	})
 
 	k8sSvc = &slim_corev1.Service{
@@ -163,7 +163,7 @@ func (s *K8sSuite) TestParseService(c *check.C) {
 		Labels:                   map[string]string{"foo": "bar"},
 		Ports:                    map[loadbalancer.FEPortName]*loadbalancer.L4Addr{},
 		NodePorts:                map[loadbalancer.FEPortName]map[string]*loadbalancer.L3n4AddrID{},
-		LoadBalancerSourceRanges: []*net.IPNet{},
+		LoadBalancerSourceRanges: map[string]*net.IPNet{},
 	})
 }
 
