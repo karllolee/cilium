@@ -750,7 +750,7 @@ struct ct_state {
 };
 
 struct lb4_src_range_key {
-	struct bpf_lpm_trie_key lpm;
+	struct bpf_lpm_trie_key lpm_key;
 	__u16 rev_nat_id;
 	__u16 pad;
 	__u32 addr;

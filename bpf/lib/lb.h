@@ -932,16 +932,15 @@ bool lb4_check_src_range(const struct lb4_service *svc __maybe_unused,
 			 __u32 saddr __maybe_unused)
 {
 #ifdef ENABLE_LB_SRC_RANGE_CHECK
-	struct lb4_src_range_key key;
+	struct lb4_src_range_key key = {
+		.lpm_key = { 32 + 16 + 16, {} },
+		.rev_nat_id = svc->rev_nat_index,
+		.addr = saddr,
+	};
 
 	if (!lb4_svc_is_lb_with_src_range_check(svc))
 		return true;
 
-	memset(&key, 0, sizeof(key));
-	key.lpm.prefixlen = 32 + 16 + 16;
-	key.rev_nat_id = svc->rev_nat_index;
-	key.addr = saddr;
-	//memcpy(key.lpm.data, &saddr, sizeof(key.addr));
 	if (map_lookup_elem(&LB4_SRC_RANGE_MAP, &key))
 		return true;
 
