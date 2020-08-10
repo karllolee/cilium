@@ -251,7 +251,6 @@ func (s *Service) UpsertService(params *UpsertServiceParams) (bool, lb.ID, error
 	if err != nil {
 		return false, lb.ID(0), err
 	}
-	fmt.Println(prevLoadBalancerSourceRanges) // TODO
 	// TODO(brb) defer ServiceID release after we have a lbmap "rollback"
 	scopedLog = scopedLog.WithField(logfields.ServiceID, svc.frontend.ID)
 	scopedLog.Debug("Acquired service ID")
